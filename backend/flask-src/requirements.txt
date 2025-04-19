@@ -1,0 +1,9 @@
+flask
+numpy
+pymongo
+python-dotenv
+pandas
+scipy
+scikit-learn
+matplotlib
+statsmodels
