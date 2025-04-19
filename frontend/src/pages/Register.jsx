@@ -1,25 +1,31 @@
-import { useState } from 'react';
-import { Mail, User, Home, MapPin, Globe, Key, Lock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import { Mail, User, Home, MapPin, Globe, Key, Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function RegistrationForm() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
-    street: '',
-    city: '',
-    state: '',
-    country: '',
-    email: '',
-    password: '',
-    otp: '',
+    name: "",
+    street: "",
+    city: "",
+    state: "",
+    country: "",
+    email: "",
+    password: "",
+    otp: "",
   });
 
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (localStorage.getItem("id")) {
+      navigate("/dashboard");
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,17 +34,17 @@ export default function RegistrationForm() {
       [name]: value,
     }));
 
-    if (error) setError('');
+    if (error) setError("");
   };
 
   const requestOtp = async () => {
     // Validate email and password first
     if (!formData.email) {
-      setError('Please enter your email address.');
+      setError("Please enter your email address.");
       return;
     }
     if (!formData.password) {
-      setError('Please enter your password.');
+      setError("Please enter your password.");
       return;
     }
 
@@ -55,24 +61,25 @@ export default function RegistrationForm() {
           country: formData.country,
           email: formData.email,
           password: formData.password,
+          role: formData.lenderBuyer,
         },
         {
-          headers:{
-            "ngrok-skip-browser-warning": true
-          }
+          headers: {
+            "ngrok-skip-browser-warning": true,
+          },
         }
       );
 
       if (response.status === 201) {
         setOtpSent(true);
-        setMessage('OTP sent to your email address.');
-        setError('');
+        setMessage("OTP sent to your email address.");
+        setError("");
       }
     } catch (err) {
       if (err.response && err.response.data) {
-        setError(err.response.data.message || 'Error during registration.');
+        setError(err.response.data.message || "Error during registration.");
       } else {
-        setError('Network error. Please try again.');
+        setError("Network error. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -81,37 +88,38 @@ export default function RegistrationForm() {
 
   const verifyOtp = async () => {
     if (!formData.otp) {
-      setError('Please enter the OTP received in your email.');
+      setError("Please enter the OTP received in your email.");
       return;
     }
 
     try {
       setLoading(true);
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/api/users/verifyEmail`, 
+        `${import.meta.env.VITE_BASE_URL}/api/users/verifyEmail`,
         {
           email: formData.email,
           otp: formData.otp,
-        },{
-          headers:{
-            "ngrok-skip-browser-warning": true
-          }
+        },
+        {
+          headers: {
+            "ngrok-skip-browser-warning": true,
+          },
         }
       );
 
       if (response.status === 200) {
-        console.log(response.data)
-        localStorage.setItem('id',response.data.data);
-        console.log(localStorage.getItem('id'));
-        
-        setMessage('Registration successful! Redirecting...');
-        navigate('/verify');
+        console.log(response.data);
+        localStorage.setItem("id", response.data.id);
+        console.log(localStorage.getItem("id"));
+
+        setMessage("Registration successful! Redirecting...");
+        navigate("/verify");
       }
     } catch (err) {
       if (err.response && err.response.data) {
-        setError(err.response.data.message || 'Invalid OTP.');
+        setError(err.response.data.message || "Invalid OTP.");
       } else {
-        setError('Network error. Please try again.');
+        setError("Network error. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -128,122 +136,148 @@ export default function RegistrationForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-black">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Create your account
-        </h2>
-      </div>
+    <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="py-8 px-8">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md">
+            <h2 className="mt-6 text-center text-3xl font-semibold text-gray-800">
+              Create your account
+            </h2>
+          </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {message && (
-            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+            <div className="mt-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-md">
               {message}
             </div>
           )}
 
           {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-md">
               {error}
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Full Name
-              </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="Mahesh Kumar"
-                  required
-                />
-              </div>
-            </div>
-
+          <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                Address Information
-              </h3>
-
               <div>
                 <label
-                  htmlFor="street"
-                  className="block text-sm font-medium text-gray-700"
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-800"
                 >
-                  Street Address
+                  Full Name
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Home className="h-5 w-5 text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <User className="h-5 w-5" />
                   </div>
                   <input
                     type="text"
-                    name="street"
-                    id="street"
-                    value={formData.street}
+                    name="name"
+                    id="name"
+                    value={formData.name}
                     onChange={handleChange}
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md"
-                    placeholder="123 Main Street"
+                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400"
+                    placeholder="Enter your full name"
                     required
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium text-gray-800">
+                  Address Information
+                </h3>
+
                 <div>
                   <label
-                    htmlFor="city"
+                    htmlFor="street"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    City
+                    Street Address
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <MapPin className="h-5 w-5 text-gray-400" />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                      <Home className="h-5 w-5" />
                     </div>
                     <input
                       type="text"
-                      name="city"
-                      id="city"
-                      value={formData.city}
+                      name="street"
+                      id="street"
+                      value={formData.street}
                       onChange={handleChange}
-                      className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md"
-                      placeholder="Bengaluru"
+                      className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400"
+                      placeholder="Enter your street address"
                       required
                     />
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="city"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      City
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <MapPin className="h-5 w-5" />
+                      </div>
+                      <input
+                        type="text"
+                        name="city"
+                        id="city"
+                        value={formData.city}
+                        onChange={handleChange}
+                        className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400"
+                        placeholder="Enter your city"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="state"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      State
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        type="text"
+                        name="state"
+                        id="state"
+                        value={formData.state}
+                        onChange={handleChange}
+                        className="focus:ring-indigo-500 focus:border-indigo-500 block w-full py-2 px-3 border border-gray-300 rounded-md placeholder-gray-400"
+                        placeholder="Enter your state"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label
-                    htmlFor="state"
+                    htmlFor="country"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    State
+                    Country
                   </label>
-                  <div className="mt-1">
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                      <Globe className="h-5 w-5" />
+                    </div>
                     <input
                       type="text"
-                      name="state"
-                      id="state"
-                      value={formData.state}
+                      name="country"
+                      id="country"
+                      value={formData.country}
                       onChange={handleChange}
-                      className="focus:ring-indigo-500 focus:border-indigo-500 block w-full py-2 px-3 border border-gray-300 rounded-md"
-                      placeholder="Karnataka"
+                      className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400"
+                      placeholder="Enter your country"
                       required
                     />
                   </div>
@@ -252,114 +286,127 @@ export default function RegistrationForm() {
 
               <div>
                 <label
-                  htmlFor="country"
+                  htmlFor="lenderBuyer"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  You are
+                </label>
+                <div className="flex space-x-4">
+                  <label className="inline-flex items-center text-gray-700">
+                    <input
+                      type="radio"
+                      name="lenderBuyer"
+                      value="buyer"
+                      checked={formData.lenderBuyer === "buyer"}
+                      onChange={handleChange}
+                      className="focus:ring-indigo-500 focus:border-indigo-500 text-indigo-600 border-gray-300"
+                    />
+                    <span className="ml-2">Buyer</span>
+                  </label>
+                  <label className="inline-flex items-center text-gray-700">
+                    <input
+                      type="radio"
+                      name="lenderBuyer"
+                      value="lender"
+                      checked={formData.lenderBuyer === "lender"}
+                      onChange={handleChange}
+                      className="focus:ring-indigo-500 focus:border-indigo-500 text-indigo-600 border-gray-300"
+                    />
+                    <span className="ml-2">Lender</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="email"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Country
+                  Email address
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Globe className="h-5 w-5 text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <Mail className="h-5 w-5" />
                   </div>
                   <input
-                    type="text"
-                    name="country"
-                    id="country"
-                    value={formData.country}
+                    type="email"
+                    name="email"
+                    id="email"
+                    value={formData.email}
                     onChange={handleChange}
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md"
-                    placeholder="India"
+                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400"
+                    placeholder="Enter your email address"
                     required
                   />
                 </div>
               </div>
-            </div>
 
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email address
-              </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="email"
-                  name="email"
-                  id="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="mahesh@gmail.com"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Password
-              </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="********"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* OTP section - always visible but only enabled after OTP is sent */}
-            <div>
-              <label
-                htmlFor="otp"
-                className="block text-sm font-medium text-gray-700"
-              >
-                OTP Verification
-              </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Key className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  name="otp"
-                  id="otp"
-                  value={formData.otp}
-                  onChange={handleChange}
-                  className={`focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border rounded-md ${
-                    otpSent ? 'border-indigo-300' : 'border-gray-300 bg-gray-50'
-                  }`}
-                  placeholder="Enter OTP"
-                  disabled={!otpSent}
-                  required={otpSent}
-                />
-              </div>
-              <div className="mt-1 text-right">
-                <button
-                  type="button"
-                  onClick={requestOtp}
-                  disabled={loading}
-                  className={`text-sm font-medium ${
-                    otpSent ? 'text-gray-400 hover:text-indigo-500' : 'text-indigo-800'
-                  }`}
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
                 >
-                  {otpSent ? 'Resend OTP' : 'Request OTP'}
-                </button>
+                  Password
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <Lock className="h-5 w-5" />
+                  </div>
+                  <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400"
+                    placeholder="Enter your password"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* OTP section */}
+              <div>
+                <label
+                  htmlFor="otp"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  OTP Verification
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <Key className="h-5 w-5" />
+                  </div>
+                  <input
+                    type="text"
+                    name="otp"
+                    id="otp"
+                    value={formData.otp}
+                    onChange={handleChange}
+                    className={`focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 ${
+                      otpSent
+                        ? "border-indigo-300"
+                        : "border-gray-300 bg-gray-50"
+                    }`}
+                    placeholder="Enter OTP"
+                    disabled={!otpSent}
+                    required={otpSent}
+                  />
+                </div>
+                <div className="mt-1 text-right">
+                  <button
+                    type="button"
+                    onClick={requestOtp}
+                    disabled={loading}
+                    className={`text-sm font-medium ${
+                      otpSent
+                        ? "text-gray-400 hover:text-indigo-500"
+                        : "text-indigo-600 hover:text-indigo-700"
+                    }`}
+                  >
+                    {otpSent ? "Resend OTP" : "Request OTP"}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -367,11 +414,17 @@ export default function RegistrationForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full cursor-pointer flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                  loading ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700'
+                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                  loading
+                    ? "bg-indigo-400 cursor-wait"
+                    : "bg-indigo-600 hover:bg-indigo-700"
                 } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
               >
-                {loading ? 'Processing...' : otpSent ? 'Complete Registration' : 'Register'}
+                {loading
+                  ? "Processing..."
+                  : otpSent
+                  ? "Complete Registration"
+                  : "Register"}
               </button>
             </div>
           </form>
@@ -390,7 +443,7 @@ export default function RegistrationForm() {
 
             <div className="mt-6">
               <button
-                onClick={() => navigate('/signin')}
+                onClick={() => navigate("/signin")}
                 type="button"
                 className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >

@@ -28,14 +28,22 @@ export default function SignIn() {
 
     try {
       const response = await axios.post(
-        'https://api.example.com/signin', // Replace with your actual sign-in API endpoint
-        formData
+        `${import.meta.env.VITE_BASE_URL}/api/users/login`, // Replace with your actual sign-in API endpoint
+        formData,
+        {headers:{
+          withCredentials: true,
+        }}
       );
 
       if (response.status === 200) {
         // Assuming your API returns some kind of token or user info upon successful login
-        console.log('Sign in successful:', response.data);
-        localStorage.setItem('authToken', response.data.token); // Store token (example)
+        // console.log(response.data);
+        // const data = response.data.data.userTokens.accessToken;
+        // console.log('User data:', data);
+        
+        // console.log('Sign in successful:', response.data);
+        console.log(response.data)
+        localStorage.setItem('id', response.data.data.userId);// Store token (example)
         navigate('/dashboard'); // Redirect to dashboard
       } else {
         setError(response.data.message || 'Sign in failed. Please try again.');

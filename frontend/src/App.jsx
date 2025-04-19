@@ -5,6 +5,10 @@ import Verify from './pages/Verify'
 import Register from './pages/Register'
 import SignIn from './pages/SignIn'
 import Dashboard from './pages/Dashboard'
+import CheckoutPage from './pages/CheckOut'
+import Buyer from './pages/Buyer'
+import Lender from './pages/Lender'
+import Requests from './pages/Requests'
 
 function App() {
   return (
@@ -15,6 +19,10 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path='dashboard' element={<Dashboard />}/>
+        <Route path='/checkout/:id' element={<CheckoutPage />}/>
+        <Route path="/buyer-dashboard" element={<Buyer />} />
+        <Route path="/lender-dashboard" element={<Lender />} />
+        <Route path='/lender/requests' element={<Requests />} />
       </Routes>
     </BrowserRouter>
   )

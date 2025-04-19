@@ -11,7 +11,6 @@ const faceDetectionOptions = new faceapi.TinyFaceDetectorOptions({
   scoreThreshold: 0.5
 });
 
-// Define consistent dimensions for capture to match mobile-like aspect ratio
 const CAPTURE_WIDTH = 480;  // Standard mobile-like width
 const CAPTURE_HEIGHT = 640; // Portrait orientation (taller than wide)
 
@@ -253,6 +252,8 @@ export default function GovDocSelfieUploader() {
           },
         }
       );
+
+      // if(res.status == 500)
 
       console.log("Submission successful:", res.data);
       setUploadStatus('success');

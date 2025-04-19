@@ -1,18 +1,33 @@
-import React from 'react'
+import React, { useEffect } from "react";
+import Navbar from "../components/NavBar";
+import Hero from "../components/Hero";
+import Features from "../components/Features";
+import HowItWorks from "../components/HowItWorks";
+import MarketStats from "../components/MarketStats";
+import ComparisonTable from "../components/ComparisonTable";
+import Roadmap from "../components/Roadmap";
+import Footer from "../components/Footer";
 
-function Landing() {
+function App() {
+  useEffect(() => {
+    // Update page title
+    document.title = "CreekPay | Decentralized P2P BNPL Platform";
+  }, []);
+
   return (
-    <div className='flex justify-center items-center h-[100vh]'>
-      <div>
-        Landing Page
-      </div>
-      <button>
-        <a href="/register" className="bg-blue-500 text-white px-4 py-2 rounded">
-          Register
-        </a>
-      </button>
+    <div className="min-h-screen bg-white text-black">
+      <Navbar />
+      <main>
+        <Hero />
+        <Features />
+        <HowItWorks />
+        <MarketStats />
+        <ComparisonTable />
+        {/* <Roadmap /> */}
+      </main>
+      <Footer />
     </div>
-  )
+  );
 }
 
-export default Landing
+export default App;
